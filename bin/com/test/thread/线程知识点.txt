@@ -1,0 +1,90 @@
+
+一.Java中的多线程有三种实现方式：
+  1.继承Thread类，重写run方法。Thread本质上也是一个实现了Runnable的实例，他代表一个线程的实例，并且启动线程的唯一方法就是通过Thread类的start方法。
+  2.实现Runnable接口，并实现该接口的run()方法.创建一个Thread对象，用实现的Runnable接口的对象作为参数实例化Thread对象，调用此对象的start方法。
+  3.实现Callable接口，重写call方法。Callable接口与Runnable接口的功能类似，但提供了比Runnable更强大的功能。有以下三点
+           ☆（下面为Runnable和Callable有什么不同）
+    1）.Callable可以在人物结束后提供一个返回值，Runnable没有提供这个功能。
+    2）.Callable中的call方法可以抛出异常，而Runnable的run方法不能抛出异常。
+    3）.运行Callable可以拿到一个Future对象，表示异步计算的结果，提供了检查计算是否完成的方法。
+  4.使用线程池,
+       1）调用Executors的newFixedThreadPool(),返回指定线程数量的ExecutorService;
+       2）将Runnable实现类的对象作为形参传递给ExecutorService的submit()方法中，开启线程
+       3）结束线程的使用
+       ExecutorService pool = Executors.newFixedThreadPool(2);
+       pool.submit(new MyThread()); //MyThread为Runnable的实现类
+       pool.shutdown(); 
+
+二.Thread 类中的start() 和 run() 方法有什么区别？
+  start方法是启动一个线程，而线程中的run方法来完成实际的操作；
+    直接调用run方法，不开启新的线程，是在原来的线程中去调用，
+  start方法用来启动新创建的线程，会开启新的线程，内部调用run；
+    ☆  ：调用start后，线程会被放到等待队列，等待CPU调度，并不一定要马上开始执行，只是将这个线程置于可动行状态；
+    多线程原理：相当于玩游戏机，只有一个游戏机（cpu），可是有很多人要玩，于是，start是排队！等CPU选中你就是轮到你，
+       你就run（），当CPU的运行的时间片执行完，这个线程就继续排队，等待下一次的run（）。
+
+三.sleep和wait的区别？
+   1）sleep是Threa的静态方法，而wait是object的方法；
+   2）都使得当前线程进入阻塞状态；
+   3）sleep可以在任何地方使用，wait必须放在同步控制方法，或者语句块中执行；
+   4）sleep是让线程暂停执行一段时间，时间一到自动恢复，并不会释放所占用的锁，而wait()需要唤醒：notify()/notifyAll()。
+
+四.用Runnable还是Thread？
+   肯定是Runnable，原因：类是单继承，Runnable同时实现了代码和数据的分离。
+
+五.为什么wait, notify 和 notifyAll这些方法不在thread类里面？
+   wait，notify和notifyAll都是锁级别的操作，所以把他们定义在Object类中，因为锁属于对象级的而不是线程级的。  
+   
+六.为什么wait和notify方法要在同步块中调用？
+   1）主要是因为Java API强制要求这样做，如果你不这么做，你的代码会抛出IllegalMonitorStateException异常。
+   2) 还有一个原因是为了避免wait和notify之间产生竞态条件。   
+   
+七.Java中什么是竞态条件？ 举个例子说明。RacingTest.java
+    在并发的情况下，线程之间共享堆空间，多个线程同时访问相同的资源并进行读写操作，竞态条件会产生许多bug；
+    举例：  
+    1）当其中一个线程需要根据某个变量的状态来相应执行某个操作的之前，该变量很可能已经被其它线程修改；
+    2）首先要执行的程序竞争失败排到后面执行等。 
+
+八.如何规避上述问题的出现？ SynchronizedTest.java
+     当多个线程需要访问同一资源的时候，它们需要以某种顺序来确保该资源在某一时刻只能被一个线程使用.
+     此时可以使用同步机制：synchronized；或者Lock显式锁实现。
+     synchronized关键字，比较耗费系统开销。    
+
+九.Lock vs synchronized?
+   1）synchronized既可以加在方法上，也可以加在特定代码块中；Lock需要显式地指定起始位置和终止位置
+   2） Lock接口的实现类增加了ReetrantLock，竞争不是很激烈的时候，synchronized性能优于ReetrantLock；
+         但是资源竞争激烈的时候，synchronized性能下降很快，ReetrantLock性能基本不变
+   3）synchronized自动解锁；Lock需要手动解锁，而且必须在finally块中释放，否则会引起死锁
+
+十.Java中如何停止一个线程？
+   1）使用共享变量
+   2）使用interrupt方法终止线程 ：方法虽然不会中断一个正在运行的线程，
+                但是它可以使一个被阻塞的线程抛出一个中断异常，从而使线程提前结束阻塞状态，退出堵塞代码。  
+
+十一.解决生产者消费者问题？   
+      就是一个线程生产任务供其它线程进行消费，你必须知道怎么进行线程间通信来解决这个问题。
+      比 较低级的办法是用wait和notify来解决这个问题，
+      比较赞的办法是用Semaphore 或者 BlockingQueue来实现生产者消费者模型。
+
+十二.有三个线程T1，T2，T3，怎么确保它们按顺序执行？
+      应该先启动最后一个(T3调用T2，T2调用T1)，这样T1就会先完成而T3最后完成,用join方法
+      
+十三.如果你提交任务时，线程池队列已满,会发生什么？
+   ThreadPoolExecutor’s submit()的时候，他会先进行addWorker()的判断，
+   	 如果不能添加成功，就会抛出异常：RejectedExecutionException。
+   	 
+十四.Java线程池中submit() 和 execute()方法有什么区别？
+   submit:可以返回持有计算结果的Future对象,定义在ExecutorService接口中;
+   execute:返回类型是void,定义在Executor接口中。
+
+    
+    
+    
+    
+   
+   
+   
+   
+   
+   
+  

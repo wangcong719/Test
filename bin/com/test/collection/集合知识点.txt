@@ -1,0 +1,38 @@
+
+一.集合和数组的区别？
+   1）数组是固定长度的；集合可变长度的
+   2）数组可以存储基本数据类型，也可以存储引用数据类型；集合只能存储引用数据类型
+   3）数组存储的元素必须是同一个数据类型；集合存储的对象可以是不同数据类型
+
+二.List和Set
+   List:有序(元素存入集合的顺序和取出的顺序一致)，元素都有索引。元素可以重复（有序可重复）
+   Set:无序(存入和取出顺序有可能不一致)，不可以存储重复元素。必须保证元素唯一性
+
+三.List
+   ArrayList：底层数据结构是数组，线程不同步，查询快，增删慢，默认大小是10,1.5倍扩容；
+   LinkedList：底层是链表，线程不同步，增删元素速度快；
+   Vector：底层是数组，查询、增删都慢，默认长度是10,2倍扩容。
+ 
+四.Map
+   Hashtable:底层是哈希散列表数据结构，线程同步，不可以存储null键和null值，不可以序列化；
+   HashMap：底层是哈希表，线程不同步，可存一个null键和多个null值，但可通过Map m = Collections.synchronizeMap(hashMap)实现同步；
+   
+五.去除map中的所有元素：keySet方法和entrySet方法（方式2效率高）
+   方式1：
+   	  Set keySet = map.keySet();
+      Iterator it = keySet.iterator();
+      while(it.hasNext()) {
+          Object key = it.next();
+          Objectvalue = map.get(key);
+          System.out.println(key+":"+value);
+      }
+   方式2：
+   	   Set entrySet = map.entrySet();
+       Iterator it =entrySet.iterator();
+       while(it.hasNext()) {
+           Map.Entry  me =(Map.Entry)it.next();
+           System.out.println(me.getKey()+"::::"+me.getValue());
+       }
+
+       
+       
